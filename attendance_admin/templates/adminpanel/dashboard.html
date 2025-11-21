@@ -1,0 +1,36 @@
+{% extends 'adminpanel/base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="container">
+  <h3 class="mb-4 text-center">Welcome to Admin Panel</h3>
+  <div class="row g-3">
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card text-center h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title mb-3">📱 Scanner</h5>
+          <p class="card-text text-muted small">Open the QR scanner to mark attendance</p>
+          <a class="btn btn-success btn-sm w-100" href="{% url 'attendance_admin:scanner' %}">Open Scanner</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card text-center h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title mb-3">📊 Reports</h5>
+          <p class="card-text text-muted small">View and export attendance reports</p>
+          <a class="btn btn-primary btn-sm w-100" href="{% url 'attendance_admin:reports' %}">View Reports</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card text-center h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title mb-3">⚙️ Django Admin</h5>
+          <p class="card-text text-muted small">Manage models and users</p>
+          <a class="btn btn-secondary btn-sm w-100" href="/admin/">Open</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

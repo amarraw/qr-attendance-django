@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block title %}QR Scanner - Admin Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+    .scanner-container {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        margin-top: 30px;
+    }
+    #video {
+        width: 100%;
+        height: auto;
+        border: 2px solid #667eea;
+        border-radius: 10px;
+        background: #000;
+    }
+    .scanner-info {
+        background: #f8f9fa;
+        border-left: 4px solid #667eea;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    .attendance-result {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 5px;
+        display: none;
+    }
+    .attendance-result.success {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+        display: block;
+    }
+    .attendance-result.error {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+        display: block;
+    }
+    .student-info {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="scanner-container">
+    <h2 class="mb-4">
+        <i class="bi bi-camera-video"></i> QR Code Scanner
+    </h2>
+
+    <div class="scanner-info">
+        <strong><i class="bi bi-info-circle"></i> Instructions:</strong>
+        <ul class="mb-0 mt-2">
+            <li>Allow camera access when prompted</li>
+            <li>Position the QR code in front of the camera</li>
+            <li>The system will automatically detect and save attendance</li>
+            <li>Results will appear below the camera feed</li>
+        </ul>
+    </div>
+
+    <div class="text-center">
+        <video id="video" autoplay playsinline></video>
+    </div>
+
+    <div id="attendance-result" class="attendance-result"></div>
+
+    <div id="student-info" class="student-info" style="display: none;">
+        <h5>Last Scanned:</h5>
+        <p><strong>Name:</strong> <span id="student-name"></span></p>
+        <p><strong>Class:</strong> <span id="student-class"></span></p>
+        <p><strong>Time:</strong> <span id="scan-time"></span></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js"></script>
+<script>
+    const videoElement = document.getElementById('video');
+    const resultDiv = document.getElementById('attendance-result');
+    const studentInfoDiv = document.getElementById('student-info');
+    let qrCodeDetected = false;
+    let lastScannedData = null;
+
+    // Initialize camera
+    async function initializeCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'environment' },
+                audio: false 
+            });
+            videoElement.srcObject = stream;
+            startScanning();
+        } catch (error) {
+            showResult('Error accessing camera: ' + error.message, 'error');
+            console.error('Camera error:', error);
+        }
+    }
+
+    // Start QR code scanning
+    function startScanning() {
+        const codeReader = new ZXing.BrowserQRCodeReader();
+        
+        codeReader.decodeFromVideoElement(videoElement, (result, err) => {
+            if (result) {
+                const qrText = result.text;
+                
+                // Avoid scanning the same QR code multiple times in quick succession
+                if (qrText !== lastScannedData) {
+                    lastScannedData = qrText;
+                    handleQRCodeDetected(qrText);
+                    
+                    // Reset after 2 seconds to allow next scan
+                    setTimeout(() => {
+                        lastScannedData = null;
+                    }, 2000);
+                }
+            }
+            
+            if (err && !(err instanceof ZXing.NotFoundException)) {
+                console.error('Scanning error:', err);
+            }
+        });
+    }
+
+    // Handle detected QR code
+    function handleQRCodeDetected(qrData) {
+        saveAttendance(qrData);
+    }
+
+    // Save attendance via AJAX
+    function saveAttendance(qrData) {
+        fetch('{% url "save_attendance" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify({ qr_data: qrData })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showResult(
+                    `<strong><i class="bi bi-check-circle"></i> Success!</strong><br>` +
+                    `Attendance marked for <strong>${data.student_name}</strong><br>` +
+                    `Class: ${data.student_class}`,
+                    'success'
+                );
+                
+                // Show student info
+                document.getElementById('student-name').textContent = data.student_name;
+                document.getElementById('student-class').textContent = data.student_class;
+                document.getElementById('scan-time').textContent = new Date().toLocaleTimeString();
+                studentInfoDiv.style.display = 'block';
+            } else {
+                showResult(
+                    `<strong><i class="bi bi-exclamation-circle"></i> Error!</strong><br>` + 
+                    data.message,
+                    'error'
+                );
+            }
+        })
+        .catch(error => {
+            showResult(
+                `<strong><i class="bi bi-exclamation-triangle"></i> Network Error!</strong><br>` + 
+                error.message,
+                'error'
+            );
+            console.error('Network error:', error);
+        });
+    }
+
+    // Show result message
+    function showResult(message, type) {
+        resultDiv.className = `attendance-result ${type}`;
+        resultDiv.innerHTML = message;
+    }
+
+    // Get CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Initialize on page load
+    window.addEventListener('load', initializeCamera);
+</script>
+{% endblock %}

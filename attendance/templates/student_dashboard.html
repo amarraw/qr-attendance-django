@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - QR Attendance System{% endblock %}
+
+{% block content %}
+<div class="container">
+  <!-- Welcome Section -->
+  <div class="card mb-4 mt-3 border-0" style="background: linear-gradient(135deg, #1A3636 0%, #40534C 100%); color: #D6BD98;">
+    <div class="card-body py-4 px-4">
+      <h3 class="mb-2" style="color: white;">Welcome, {{ user.get_full_name|default:user.username }}! 👋</h3>
+      <p class="mb-0 opacity-90">Class: <strong>{{ student.class_name }}</strong> • ID: <strong>{{ user.id }}</strong></p>
+    </div>
+  </div>
+
+  <!-- Profile & QR Code Section -->
+  <div class="row g-3 mb-4">
+    <!-- Profile Card -->
+    <div class="col-12 col-md-6">
+      <div class="card h-100">
+        <div class="card-header">
+          <h6 class="card-title">
+            <i class="bi bi-person-circle"></i> Your Profile
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-6">
+              <small class="text-muted-light">Name</small>
+              <p class="fw-600">{{ user.get_full_name|default:user.username }}</p>
+            </div>
+            <div class="col-6">
+              <small class="text-muted-light">Email</small>
+              <p class="fw-600">{{ user.email|default:"N/A" }}</p>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-6">
+              <small class="text-muted-light">Phone</small>
+              <p class="fw-600">{{ student.phone|default:"Not provided" }}</p>
+            </div>
+            <div class="col-6">
+              <small class="text-muted-light">Class</small>
+              <p class="fw-600">{{ student.class_name }}</p>
+            </div>
+          </div>
+          <div>
+            <small class="text-muted-light">Student ID</small>
+            <p class="fw-600 text-primary">{{ user.id }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QR Code Card -->
+    <div class="col-12 col-md-6">
+      <div class="card h-100">
+        <div class="card-header">
+          <h6 class="card-title">
+            <i class="bi bi-qr-code"></i> Your QR Code
+          </h6>
+        </div>
+        <div class="card-body text-center">
+          {% if student.qr_code %}
+            <img src="{{ student.qr_code.url }}" alt="QR Code" class="img-fluid rounded" style="max-width: 200px; max-height: 200px;">
+            <p class="text-muted-light small mt-3 mb-0">
+              <i class="bi bi-info-circle"></i> Scan this code to mark attendance
+            </p>
+          {% else %}
+            <div class="alert alert-warning alert-sm mb-0">
+              <i class="bi bi-exclamation-triangle"></i> QR Code not generated. Please contact admin.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Attendance Section -->
+  <div class="card">
+    <div class="card-header">
+      <h6 class="card-title">
+        <i class="bi bi-calendar-check"></i> Recent Attendance
+      </h6>
+    </div>
+    <div class="card-body">
+      {% if recent_attendance %}
+        <!-- Attendance List (Mobile-friendly) -->
+        <div class="d-none d-md-block">
+          <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th style="width: 40%;">Date</th>
+                  <th style="width: 30%;">Time</th>
+                  <th style="width: 30%;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for attendance in recent_attendance %}
+                <tr>
+                  <td>
+                    <strong>{{ attendance.date }}</strong>
+                  </td>
+                  <td>
+                    {{ attendance.time|time:"H:i" }}
+                  </td>
+                  <td>
+                    {% if attendance.status|lower == 'present' %}
+                      <span class="badge bg-success"><i class="bi bi-check-circle"></i> Present</span>
+                    {% elif attendance.status|lower == 'late' %}
+                      <span class="badge bg-warning"><i class="bi bi-clock"></i> Late</span>
+                    {% else %}
+                      <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Absent</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="d-md-none">
+          {% for attendance in recent_attendance %}
+          <div class="card mb-2 border-start border-4" 
+            {% if attendance.status|lower == 'present' %}
+              style="border-color: #198754 !important;"
+            {% elif attendance.status|lower == 'late' %}
+              style="border-color: #ffc107 !important;"
+            {% else %}
+              style="border-color: #dc3545 !important;"
+            {% endif %}>
+            <div class="card-body py-2 px-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <p class="mb-1"><strong>{{ attendance.date }}</strong></p>
+                  <small class="text-muted">{{ attendance.time|time:"H:i" }}</small>
+                </div>
+                <div>
+                  {% if attendance.status|lower == 'present' %}
+                    <span class="badge bg-success">Present</span>
+                  {% elif attendance.status|lower == 'late' %}
+                    <span class="badge bg-warning">Late</span>
+                  {% else %}
+                    <span class="badge bg-danger">Absent</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="alert alert-info alert-sm mb-0" role="alert">
+          <i class="bi bi-info-circle"></i> No attendance records yet. Your attendance will appear here once you're scanned.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Statistics Section (Optional) -->
+  <div class="row g-3 mt-3 mb-4">
+    <div class="col-6 col-sm-4">
+      <div class="card text-center">
+        <div class="card-body py-3">
+          <h4 class="mb-1" style="color: #198754;">{{ recent_attendance|length }}</h4>
+          <small class="text-muted">Total Present</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-sm-4">
+      <div class="card text-center">
+        <div class="card-body py-3">
+          <h4 class="mb-1" style="color: #ffc107;">0</h4>
+          <small class="text-muted">Late</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-sm-4">
+      <div class="card text-center">
+        <div class="card-body py-3">
+          <h4 class="mb-1" style="color: #dc3545;">0</h4>
+          <small class="text-muted">Absent</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .fw-600 {
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .alert-sm {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+  
+  @media (max-width: 576px) {
+    .card {
+      margin-bottom: 12px;
+    }
+    
+    .row {
+      --bs-gutter-x: 0.75rem;
+      --bs-gutter-y: 0.75rem;
+    }
+  }
+</style>
+{% endblock %}

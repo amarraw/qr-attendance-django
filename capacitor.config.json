@@ -1,0 +1,9 @@
+{
+  "appId": "com.example.qrattend",
+  "appName": "QR Attendance",
+  "webDir": "public",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": ""
+  }
+}

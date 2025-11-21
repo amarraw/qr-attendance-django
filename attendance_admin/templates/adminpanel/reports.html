@@ -1,0 +1,68 @@
+{% extends 'adminpanel/base.html' %}
+{% block title %}Attendance Reports{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h4 class="card-title mb-4">📊 Attendance Reports</h4>
+      
+      <!-- Filter Form -->
+      <form method="get" class="mb-4">
+        <div class="row g-2">
+          <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label small">Date</label>
+            <input type="date" name="date" value="{{ date_filter }}" class="form-control form-control-sm">
+          </div>
+          <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label small">Class</label>
+            <select name="class" class="form-select form-select-sm">
+              <option value="">All Classes</option>
+              {% for c in classes %}
+                <option value="{{ c }}" {% if class_filter == c %}selected{% endif %}>{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-12 col-md-4 d-flex gap-2 align-items-end flex-wrap">
+            <button class="btn btn-primary btn-sm">Filter</button>
+            <a href="{% url 'attendance_admin:export_csv' %}?{% if date_filter %}date={{ date_filter }}&{% endif %}{% if class_filter %}class={{ class_filter }}{% endif %}" class="btn btn-success btn-sm">Export CSV</a>
+          </div>
+        </div>
+      </form>
+
+      <!-- Results Table (Responsive) -->
+      <div class="table-responsive">
+        <table class="table table-striped table-sm">
+          <thead class="table-light">
+            <tr>
+              <th>Student Name</th>
+              <th class="d-none d-sm-table-cell">Class</th>
+              <th class="d-none d-md-table-cell">Date</th>
+              <th class="d-none d-lg-table-cell">Time</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in attendances %}
+            <tr>
+              <td>
+                <small>{{ a.student.user.get_full_name|default:a.student.user.username }}</small>
+                <br>
+                <span class="d-sm-none text-muted" style="font-size: 0.75rem;">{{ a.student.class_name }} • {{ a.date }}</span>
+              </td>
+              <td class="d-none d-sm-table-cell"><small>{{ a.student.class_name }}</small></td>
+              <td class="d-none d-md-table-cell"><small>{{ a.date }}</small></td>
+              <td class="d-none d-lg-table-cell"><small>{{ a.time }}</small></td>
+              <td><span class="badge bg-success">{{ a.status }}</span></td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">No attendance records found</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

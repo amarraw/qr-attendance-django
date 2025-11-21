@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - QR Attendance System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center" style="min-height: 100vh; display: flex; align-items: center;">
+        <div class="col-md-8">
+            <div class="text-center mb-5">
+                <h1 style="font-size: 3rem; color: white; margin-bottom: 20px;">
+                    <i class="bi bi-qr-code" style="font-size: 4rem;"></i><br>
+                    QR Attendance System
+                </h1>
+                <p style="color: white; font-size: 1.2rem;">Smart attendance tracking with QR codes</p>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-person-check" style="font-size: 3rem; color: #667eea;"></i>
+                            <h5 class="card-title mt-3">I'm a Student</h5>
+                            <p class="card-text">Login to view your QR code and attendance record</p>
+                            <a href="{% url 'student_login' %}" class="btn btn-primary-custom" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white;">
+                                Student Login
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-shield-lock" style="font-size: 3rem; color: #667eea;"></i>
+                            <h5 class="card-title mt-3">I'm an Admin</h5>
+                            <p class="card-text">Login to scan QR codes and manage attendance</p>
+                            <a href="{% url 'attendance_admin:login' %}" class="btn btn-primary-custom" style="background: linear-gradient(135deg, #40534C 0%, #1A3636 100%); border: none; color: white;">
+                                Admin Login
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-5" role="alert">
+                <strong>First time here?</strong> Students can <a href="{% url 'student_register' %}" class="alert-link">register here</a>.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
