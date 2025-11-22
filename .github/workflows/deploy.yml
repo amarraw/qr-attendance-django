@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: Django CI/CD Pipeline
 
 on:
   push:
@@ -26,15 +26,42 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests
+        id: run-tests
         run: |
           python manage.py test
 
-  deploy:
-    name: Deploy to Render
+  notify:
     needs: test
     runs-on: ubuntu-latest
+    steps:
+      - name: Send Success Email
+        if: success()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USER }}
+          password: ${{ secrets.EMAIL_PASS }}
+          subject: "CI Success ✅"
+          to: alin.raw01@example.com
+          body: "All tests passed! Ready to deploy."
 
+      - name: Send Failure Email
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USER }}
+          password: ${{ secrets.EMAIL_PASS }}
+          subject: "CI Failed ❌"
+          to: alin.raw01@example.com
+          body: "Tests failed! Check CI logs for details."
+
+  deploy:
+    needs: test
+    if: success()
+    runs-on: ubuntu-latest
     steps:
       - name: Trigger Render Deploy
-        run: |
-          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+        run: curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
