@@ -35,14 +35,8 @@ Replace `YOUR_USERNAME` with your GitHub username and `qr-attendance-django` wit
 3. Configure:
    - **Name**: `qr-attendance`
    - **Environment**: `Python 3`
-   - **Build Command**: 
-     ```
-     pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
-     ```
-   - **Start Command**: 
-     ```
-     gunicorn qr_attendance.wsgi
-     ```
+   - **Build Command**: `pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput`
+   - **Start Command**: `gunicorn qr_attendance.wsgi`
    - **Plan**: Free tier (auto-sleeps after 15 min inactivity)
 
 ## Step 4: Set Environment Variables
