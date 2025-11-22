@@ -17,7 +17,7 @@ class Student(models.Model):
     qr_code = models.ImageField(upload_to='qr_codes/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    EROOOOOORRRRR
     class Meta:
         ordering = ['-created_at']
         verbose_name = 'Student'
