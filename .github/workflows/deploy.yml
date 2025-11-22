@@ -43,7 +43,7 @@ jobs:
           username: ${{ secrets.EMAIL_USER }}
           password: ${{ secrets.EMAIL_PASS }}
           subject: "CI Success ✅"
-          to: alin.raw01@example.com
+          to: alin.raw01@gmail.com
           body: "All tests passed! Ready to deploy."
 
       - name: Send Failure Email
@@ -55,7 +55,7 @@ jobs:
           username: ${{ secrets.EMAIL_USER }}
           password: ${{ secrets.EMAIL_PASS }}
           subject: "CI Failed ❌"
-          to: alin.raw01@example.com
+          to: alin.raw01@gmail.com
           body: "Tests failed! Check CI logs for details."
 
   deploy:
