@@ -9,13 +9,24 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
+import os
+
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-change-this-in-production')
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-# ALLOWED_HOSTS configuration for production
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+# Render provides this automatically
+render_host = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+
+if render_host:
+    ALLOWED_HOSTS.append(render_host)
+
+CSRF_TRUSTED_ORIGINS = []
+
+if render_host:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{render_host}")
 
 # Application definition
 INSTALLED_APPS = [
